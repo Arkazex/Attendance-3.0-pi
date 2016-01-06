@@ -27,39 +27,50 @@ public class Debug {
 	public static boolean isDebugCode(String code) {
 		//Enable code
 		if(code.equals("7777")) {
-			enabled = !enabled;
-			System.out.println("Debug mode changed...");
-			Display.mode = LCDMode.LOADING;
-			Display.clearl1();
-			Display.printCenter("Debug mode " +
-					(enabled ? "enabled" : "disabled"));
-		}
-		//Check if debug codes are enabled
-		if(!enabled) {
-			System.out.println("Debug codes are not enabled!");
-			return false;
+			//Special case
+			return true;
 		}
 		//Test
 		boolean debug = 
-				code.equals(ipcode) || 
-				code.equals(macode) ||
-				code.equals(utcode) ||
-				code.equals(srcode) ||
-				code.equals(hrcode) ||
-				code.equals(excode) ||
-				code.equals(endall);
+				code.equals(ipcode) || //Show IP
+				code.equals(macode) || //Show MAC
+				code.equals(utcode) || //Update user table
+				code.equals(srcode) || //Soft-reboot
+				code.equals(hrcode) || //Hard-reboot
+				code.equals(excode) || //Terminate
+				code.equals(endall);   //Sign-out all remaining users
 		//Notify
-		if(debug) { 
+		if(debug) {
+			//Check if debug codes are enabled
+			if(!enabled) {
+				System.out.println("Debug codes are not enabled!");
+				return false;
+			}
+			//This is a debug code
 			System.out.println(code + " is a debug code");
-		} else {
-			System.out.println(code + " is not a debug code");
+			return true;
 		}
-		//Check
-		return debug;
+		//Not a debug code
+		return false;
 	}
 	
 	//Process a debug code
 	public static void procDebugCode(String code) {
+		//Check for enable code
+		if(code.equals("7777")) {
+			//Toggle mode
+			enabled = !enabled;
+			//Notify
+			System.out.println("Debug mode " +
+					(enabled ? "enabled" : "disabled"));
+			//Write to screen
+			Display.clearl1();
+			Display.printCenter("Debug mode " +
+					(enabled ? "enabled" : "disabled"));
+			//Set reset
+			Display.mode = LCDMode.DEBUG;
+			Reset.time = System.currentTimeMillis() + 2000;
+		}
 		//Check if enabled
 		if(!enabled) {
 			System.out.println("Debug codes are not enabled!");
