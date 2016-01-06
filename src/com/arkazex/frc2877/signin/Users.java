@@ -1,6 +1,7 @@
 package com.arkazex.frc2877.signin;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -9,15 +10,14 @@ import org.json.JSONObject;
 
 import com.arkazex.frc2877.signin.util.Color;
 import com.arkazex.frc2877.signin.util.FileReader;
-import com.arkazex.frc2877.signin.util.FileWriter;
 import com.arkazex.frc2877.signin.util.UrlFetcher;
 import com.arkazex.lcd.LCDMode;
 
 public class Users {
 	
 	//Maps
-	public static HashMap<String,String[]> uidmap = new HashMap<String,String[]>();
-	public static HashMap<String,String[]> cidmap = new HashMap<String,String[]>();
+	public static HashMap<String,User> uidmap = new HashMap<String,User>();
+	public static HashMap<String,User> cidmap = new HashMap<String,User>();
 
 	public static void init() {
 		//Notify
@@ -49,8 +49,14 @@ public class Users {
 				String rawjson = UrlFetcher.fetch(url);
 				//Parse the data
 				udata = new JSONObject(rawjson);
+				//Get the file
+				File udcache = new File("udat.json");
+				//Get output
+				FileOutputStream out = new FileOutputStream(udcache);
 				//Save the data
-				FileWriter.writeFile(new File("udat.json"), rawjson);
+				out.write(rawjson.getBytes());
+				//Flush and close output
+				out.flush(); out.close();
 			}
 		} catch(Exception e) {
 			//Error, trigger warning mode
@@ -66,16 +72,12 @@ public class Users {
 		//Process the users
 		for(int i = 0; i < users.length(); i++) {
 			//Get the user
-			JSONObject user = users.getJSONObject(i);
-			//Get the user info as an array
-			String[] info = new String[]{
-					user.get("uid") + "",
-					user.get("cid") + "",
-					user.getString("fname"),
-					user.getString("lname")};
+			JSONObject userinfo = users.getJSONObject(i);
+			//Create the user
+			User user = new User(userinfo);
 			//Save the info
-			uidmap.put(user.get("uid") + "", info);
-			cidmap.put(user.get("cid") + "", info);
+			uidmap.put(userinfo.get("uid") + "", user);
+			cidmap.put(userinfo.get("cid") + "", user);
 		}
 		System.out.println(Color.GREEN + " Done." + Color.RESET);
 	}
@@ -104,7 +106,7 @@ public class Users {
 		//Freeze
 		Display.mode = LCDMode.LOADING;
 		//Get the user
-		String[] user = getuser(id, source);
+		User user = getuser(id, source);
 		//Check if user exists
 		if(user == null) {
 			//Clear the first line of the display
@@ -122,15 +124,15 @@ public class Users {
 			//Display name
 			Display.clearl1();
 			//Print the name
-			System.out.println("[" + source.name() + "] Trigger " + id + " " + user[2]);
-			Display.lcd.print("Hello " + user[2]);
+			System.out.println("[" + source.name() + "] Trigger " + id + " " + user.data.getString("fname"));
+			Display.lcd.print("Hello " + user.data.getString("fname"));
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
 		}
 	}
 	
 	//Get a user
-	private static String[] getuser(String id, TriggerSource ts) {
+	private static User getuser(String id, TriggerSource ts) {
 		//Check source
 		if(ts == TriggerSource.KPAD) {
 			//Return user from user ID map
