@@ -114,6 +114,8 @@ public class Users {
 			Display.lcd.print((in ? "Hello " : "Goodbye ") + user.data.getString("fname"));
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
+			//Toggle user status
+			user.data.put("status", user.data.get("status").equals("in") ? "out" : "in");
 		}
 	}
 	
