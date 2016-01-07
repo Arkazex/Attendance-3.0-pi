@@ -12,6 +12,9 @@ public class SignIn {
 	//Rebooted
 	public static boolean rebooted = false;
 	
+	//Number of modules
+	private static final int MODCOUNT = 9;
+	
 	//Main method
 	public static void main(String[] args) {
 		//Check the arguments
@@ -23,23 +26,24 @@ public class SignIn {
 		//Notify
 		System.out.println("Initializing V3...");
 		//Initialize the LCD
-		Display.init();
+		Display.init();	status(1);
 		//Initialize the Buzzer
-		Buzzer.init();
+		Buzzer.init();	status(2);
 		//Initialize the Reset timer
-		Reset.init();
+		Reset.init();	status(3);
 		//Initialize the Keypad
-		Keypad.init();
+		Keypad.init();	status(4);
 		//Initialize the user list
-		Users.init();
+		Users.init();	status(5);
 		//Initialize the clock
-		Clock.init();
+		Clock.init();	status(6);
 		//Initialize the RFID module
-		Rfid.init();
+		Rfid.init();	status(7);
 		//Initialize the HID module
-		HID.init();
+		HID.init();		status(8);
 		//Initialize the virtual keypad
-		VirtKeypad.init();
+		VirtKeypad.init();	status(9);
+		
 		//Start the clock
 		Display.mode = LCDMode.IDLE;
 		//Notify
@@ -54,5 +58,12 @@ public class SignIn {
 		Buzzer.beep();
 		try { Thread.sleep(100); } catch (InterruptedException e) {}
 		Buzzer.beep();
+	}
+	
+	//Shows a loading status indicator
+	private static void status(int modnum) {
+		//Set the label
+		Display.clearl1();
+		Display.lcd.print("Loading... (" + modnum + "/" + MODCOUNT + ")");
 	}
 }

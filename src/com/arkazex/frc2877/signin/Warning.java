@@ -14,13 +14,17 @@ public class Warning {
 			//Method
 			@Override
 			public void run() {
-				//Wile active
+				//Wile warning is active
 				while(active) {
+					//Move to upper left corner and display mark
 					Display.lcd.position(0, 0);
 					Display.lcd.print("!");
+					//Wait
 					try { Thread.sleep(1000); } catch (InterruptedException e) {}
+					//Move to upper left corner and display mark
 					Display.lcd.position(0, 0);
 					Display.lcd.print(" ");
+					//Wait
 					try { Thread.sleep(1750); } catch (InterruptedException e) {}
 				}
 			}
