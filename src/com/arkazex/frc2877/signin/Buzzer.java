@@ -1,6 +1,5 @@
 package com.arkazex.frc2877.signin;
 
-import com.arkazex.frc2877.signin.util.Color;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
@@ -14,18 +13,16 @@ public class Buzzer {
 	
 	public static void init() {
 		//Notify
-		System.out.println("  Initializing Buzzer...");
-		System.out.print("    Retrieving GPIO controller...");
+		Logger.log(Level.INFO, "Initializing Buzzer...");
+		Logger.log(Level.DEBUG, "Connecting to GPIO controller...");
 		//Get the GPIO controller
 		GpioController gpio = GpioFactory.getInstance();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Allocating GPIO pin...");
+		Logger.log(Level.DEBUG, "Assigning Pin...");
 		//Allocate the pin
 		pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_25, "buzzer");
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.println("  Buzzer Initialized.");
+		Logger.log(Level.OKAY, "Buzzer ready!");
 	}
 	
 	//Beep method
@@ -41,5 +38,23 @@ public class Buzzer {
 		try { Thread.sleep(duration); } catch (InterruptedException e) {}
 		//Turn the pin off
 		pin.setState(PinState.LOW);
+	}
+	
+	//Fatal error beep
+	public static void fatalbeep() {
+		//Run in new thread
+		new Thread() {
+			@Override
+			//Thread method
+			public void run() {
+				//Beep 3 times
+				for(int i = 0; i < 3; i++) {
+					//Long beep
+					beep(500);
+					//Long pause
+					try { Thread.sleep(500); } catch (InterruptedException e) {}
+				}
+			}
+		}.start();
 	}
 }

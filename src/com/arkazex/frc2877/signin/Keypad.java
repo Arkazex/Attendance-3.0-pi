@@ -1,6 +1,5 @@
 package com.arkazex.frc2877.signin;
 
-import com.arkazex.frc2877.signin.util.Color;
 import com.arkazex.lcd.LCDMode;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -24,13 +23,12 @@ public class Keypad {
 	
 	public static void init() {
 		//Notify
-		System.out.println("  Initializing Keypad...");
-		System.out.print("    Retrieving GPIO controller...");
+		Logger.log(Level.INFO, "Initializing Keypad...");
+		Logger.log(Level.DEBUG, "Connecting to GPIO controller...");
 		//Get the GPIO controller
 		GpioController gpio = GpioFactory.getInstance();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Allocating GPIO pins...");
+		Logger.log(Level.DEBUG, "Allocating pins...");
 		//Allocate the GPIO pins
 		pins = new GpioPinDigitalInput[]{
 			gpio.provisionDigitalInputPin(RaspiPin.GPIO_07,"*", PinPullResistance.PULL_DOWN),
@@ -47,29 +45,20 @@ public class Keypad {
 			gpio.provisionDigitalInputPin(RaspiPin.GPIO_23,"3", PinPullResistance.PULL_DOWN)
 		};
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Creating GPIO listener...");
+		Logger.log(Level.DEBUG, "Creating listener...");
 		//Create the listener
 		GpioPinListenerDigital listener = createListener();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Registering GPIO listeners...");
+		Logger.log(Level.DEBUG, "Registering listener...");
 		//Register GPIO listeners
-		for(GpioPinDigitalInput pin : pins) {
-			pin.addListener(listener);
-		}
+		for(GpioPinDigitalInput pin : pins) { pin.addListener(listener); }
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Creating inactivity listener...");
-		//Create inactivity listener
-		
-		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.println("  Keypad Initialization Complete.");
+		Logger.log(Level.OKAY, "Keypad ready!");
 	}
 	
 	//Method for creating a GpioPinListener
 	private static GpioPinListenerDigital createListener() {
+		//Create and save the listener
 		listener = new GpioPinListenerDigital() {
 			@Override
 			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent arg0) {
@@ -81,6 +70,7 @@ public class Keypad {
 				handlePress(key);
 			}
 		};
+		//Return reference
 		return listener;
 	}
 	
@@ -94,7 +84,7 @@ public class Keypad {
 			delay(2);
 			return;
 		}
-		//Start reset clock
+		//Start reset clock, or reset to 4 seconds from now
 		Reset.time = System.currentTimeMillis() + 4000;
 		//Beep
 		Buzzer.beep();
@@ -117,7 +107,7 @@ public class Keypad {
 		//Check if submit
 		if(key.equals("#")) {
 			//Notify
-			System.out.println("Keypad Input: " + input);
+			Logger.log(Level.DEBUG, "Keypad input: " + input);
 			//Check if debug code
 			if(Debug.isDebugCode(input)) {
 				//Trigger debug

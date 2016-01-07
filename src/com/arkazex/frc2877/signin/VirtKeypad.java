@@ -1,32 +1,21 @@
 package com.arkazex.frc2877.signin;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-
-import javax.net.ssl.HandshakeCompletedEvent;
-import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
-
-import com.arkazex.frc2877.signin.util.Color;
-
 public class VirtKeypad {
 
 	//Client writer
-	private static OutputStream vkout;
+	/*private static OutputStream vkout;
 	private static InputStream vkin;
 	private static Socket vkclient;
 	private static boolean busy = false;
 	private static boolean connected = false;
 	//Socket
 	private static SSLServerSocket server;
-	
+	*/
 	//Initialization method
 	public static void init() {
 		//Notify
+		Logger.log(Level.INFO, "Skipping virtual keypad server...");
+		/*
 		System.out.println("  Initializing virtual keypad server...");
 		System.out.print("    Starting server...");
 		//Start server
@@ -34,13 +23,14 @@ public class VirtKeypad {
 		//Notify
 		System.out.println(Color.GREEN + " Done." + Color.RESET);
 		System.out.println("  Virtual keypad server initialization complete.");
+		*/
 	}
 	
 	//Check if Virtual Keypad is enabled
 	public static boolean enabled() {
-		return vkout != null;
+		return false;
 	}
-	
+	/*
 	//Starts the server
 	private static void startServer() {
 		//Catch any errors that occur here
@@ -197,4 +187,5 @@ public class VirtKeypad {
 		//Return the socket
 		return server;
 	}
+	*/
 }

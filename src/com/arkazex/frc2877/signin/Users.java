@@ -1,15 +1,14 @@
 package com.arkazex.frc2877.signin;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.arkazex.frc2877.signin.util.Color;
-import com.arkazex.frc2877.signin.util.FileReader;
 import com.arkazex.frc2877.signin.util.UrlFetcher;
 import com.arkazex.lcd.LCDMode;
 
@@ -21,52 +20,42 @@ public class Users {
 
 	public static void init() {
 		//Notify
-		System.out.println("  Initializing User List...");
+		Logger.log(Level.INFO, "Initializing User List...");
 		//Update the user list
 		update();
 		//Done
-		System.out.println("  User List Initialized.");
+		Logger.log(Level.OKAY, "User List ready!");
 	}
 	
 	//Update method
 	static void update() {
-		//User data json
-		JSONObject udata;
+		//User data JSON object
+		JSONObject udata = null;
 		//Try/catch
 		try {
 			//Notify
-			System.out.print("    Retrieving user list...");
-			//Check if skip
-			if(Keypad.pins[0].isHigh()) {
-				//Skip re-download
-				System.out.print(Color.YELLOW + " Skipping..." + Color.RESET);
-				//Load from file
-				udata = loadFromFile();
-			} else {
-				//Apply the parameters
-				String url = SignIn.baseURL + "?cmd=getUsers";
-				//Get the user
-				String rawjson = UrlFetcher.fetch(url);
-				//Parse the data
-				udata = new JSONObject(rawjson);
-				//Get the file
-				File udcache = new File("udat.json");
-				//Get output
-				FileOutputStream out = new FileOutputStream(udcache);
-				//Save the data
-				out.write(rawjson.getBytes());
-				//Flush and close output
-				out.flush(); out.close();
-			}
+			Logger.log(Level.DEBUG, "Updating user list...");
+			//Get the query URL
+			String url = SignIn.baseURL + "?cmd=getUsers";
+			//Execute the command, and get the response
+			String rawjson = UrlFetcher.fetch(url);
+			//Notify
+			Logger.log(Level.DEBUG, "Parsing user list...");
+			//Parse the data
+			udata = new JSONObject(rawjson);
 		} catch(Exception e) {
-			//Error, trigger warning mode
-			Warning.show();
-			//Load the data from file
-			udata = loadFromFile();
+			//Log error
+			Logger.log(Level.ERROR, "Failed to retrieve user list");
+			//Print error to screen
+			Display.lcd.position(0, 0);
+			Display.lcd.print("User List error!");
+			//Beep the error
+			Buzzer.fatalbeep();
+			//Restart in 5 seconds
+			SignIn.restart(5);
 		}
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Processing user list...");
+		Logger.log(Level.DEBUG, "Processing user list...");
 		//Get the users
 		JSONArray users = udata.getJSONArray("data");
 		//Process the users
@@ -75,30 +64,22 @@ public class Users {
 			JSONObject userinfo = users.getJSONObject(i);
 			//Create the user
 			User user = new User(userinfo);
+			//Check for duplicate UID
+			if(uidmap.containsKey(userinfo.getString("uid"))) {
+				//Duplicate UID
+				Logger.log(Level.WARN, "Duplicate UID \"" + userinfo.getString("uid") + "\"");
+			}
+			//Check for duplicate CID
+			if(cidmap.containsKey(userinfo.getString("cid"))) {
+				//Duplicate CID
+				Logger.log(Level.WARN, "Duplicate CID \"" + userinfo.getString("cid") + "\"");
+			}
 			//Save the info
 			uidmap.put(userinfo.get("uid") + "", user);
 			cidmap.put(userinfo.get("cid") + "", user);
 		}
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-	}
-	//Load from file
-	private static JSONObject loadFromFile() {
-		//Load the user file
-		String users = null;
-		try {
-			users = FileReader.readFile(new File("udat.json"));
-		} catch (IOException e1) {
-			//Fatal error
-			System.out.println();
-			System.out.println("FATAL ERROR: No user table");
-			Display.lcd.clear();
-			Display.lcd.print("  FATAL ERROR");
-			Display.lcd.position(1, 0);
-			Display.lcd.print(" NO USER TABLE");
-			System.exit(0);
-		}
-		//Process the object
-		return new JSONObject(users);
+		//Notify
+		Logger.log(Level.OKAY, "User list ready!");
 	}
 	
 	//Trigger sign-in
@@ -109,10 +90,11 @@ public class Users {
 		User user = getuser(id, source);
 		//Check if user exists
 		if(user == null) {
+			//Notify
+			Logger.log(Level.WARN, "Invalid ID \"" + id + "\" from " + source.name());
 			//Clear the first line of the display
 			Display.clearl1();
 			//Print the error message
-			System.out.println("[" + source.name() + "] Invalid ID " + id);
 			Display.lcd.print("   INVALID ID");
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
@@ -123,10 +105,12 @@ public class Users {
 			sendTrigger(id, source);
 			//Get the users current status
 			boolean in = user.data.getString("status").equals("in");
+			//Notify
+			Logger.log(Level.INFO, user.data.getString("fname") + " " + user.data.getString("lname") +
+					" has signed " + (in ? "in" : "out"));
 			//Display name
 			Display.clearl1();
 			//Print the name
-			System.out.println("[" + source.name() + "] Trigger " + id + " " + user.data.getString("fname"));
 			Display.lcd.print((in ? "Hello " : "Goodbye ") + user.data.getString("fname"));
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
@@ -153,6 +137,8 @@ public class Users {
 			public void run() {
 				//Append the arguments
 				String url = SignIn.baseURL + "?cmd=trigger&id=" + id;
+				//Get user
+				User user = Users.getuser(id, ts);
 				//Request
 				try {
 					//Get the response
@@ -160,9 +146,26 @@ public class Users {
 					//Parse the response
 					JSONObject json = new JSONObject(resp);
 					//Check detail
-					Users.getuser(id, ts).data.put("status", json.getString("detail").equals("opened") ? "in" : "out");
+					user.data.put("status", json.getString("detail").equals("opened") ? "in" : "out");
 				} catch (IOException e) {
-					//TODO: Handle this
+					//Notify
+					Logger.log(Level.WARN, "Failed to trigger user: " + e.getMessage());
+					//Try to save to record
+					try {
+						//Save entry to file
+						File record = new File("offline_record.txt");
+						//Open in write mode
+						PrintWriter out = new PrintWriter(new FileWriter(record, true));
+						//Append
+						out.println(System.currentTimeMillis() + ", " + user.data.getString("fname") +
+								user.data.getString("lname"));
+						//Flush and close
+						out.flush();
+						out.close();
+					} catch(Exception ex) {
+						//Notify
+						Logger.log(Level.ERROR, "Failed to save entry to offline record!");
+					}
 				}
 			}
 		}.start();

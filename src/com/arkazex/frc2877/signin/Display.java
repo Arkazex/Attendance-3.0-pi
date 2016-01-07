@@ -1,6 +1,5 @@
 package com.arkazex.frc2877.signin;
 
-import com.arkazex.frc2877.signin.util.Color;
 import com.arkazex.lcd.LCD;
 import com.arkazex.lcd.LCDMode;
 
@@ -17,7 +16,7 @@ public class Display {
 	//Initialization method
 	public static void init() {
 		//Notify
-		System.out.print("  Initializing Display...");
+		Logger.log(Level.INFO, "Initializing Display..");
 		//Try/catch
 		try {
 			//Get the LCD object
@@ -32,13 +31,12 @@ public class Display {
 			printCenter("Please Wait...");
 		} catch(Exception e) {
 			//Fatal error
-			System.out.println();
-			System.out.println(Color.RED + "Encountered fatal error while initializing display" + Color.RESET);
-			e.printStackTrace();
+			Logger.log(Level.ERROR, "Failed to initialize display: " + e.getMessage());
+			Logger.handleCrash(e);
 			System.exit(0);
 		}
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
+		Logger.log(Level.OKAY, "Display ready!");
 	}
 	
 	//Method for clearing line 1
@@ -67,13 +65,14 @@ public class Display {
 		//Check warning
 		if(mlength > 16) {
 			//Warning
-			System.out.println("Warning: Message \"" + message + "\" is too big for screen.");
-			System.out.println("\tSome characters may have been lost.");
+			Logger.log(Level.WARN, "Message \"" + message + "\" is too big for screen");
 		}
 		//Calculate the length difference
 		int diff = 16 - mlength;
 		//Calculate padding
 		int padding = diff / 2;
+		//Move to center
+		lcd.position(0, 0);
 		//Print the padding
 		for(int i = 0; i < padding; i++) {
 			lcd.print(" ");

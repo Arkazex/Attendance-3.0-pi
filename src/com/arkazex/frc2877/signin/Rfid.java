@@ -1,6 +1,5 @@
 package com.arkazex.frc2877.signin;
 
-import com.arkazex.frc2877.signin.util.Color;
 import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialDataEvent;
 import com.pi4j.io.serial.SerialDataListener;
@@ -14,24 +13,24 @@ public class Rfid {
 	//Initialization method
 	public static void init() {
 		//Notify
-		System.out.println("  Initializing RFID module...");
-		System.out.print("    Creating Serial Connection...");
+		Logger.log(Level.INFO, "Initializing RFID module...");
+		Logger.log(Level.DEBUG, "Creating Serial Connection...");
 		//Create the serial connection
 		Serial serial = SerialFactory.createInstance();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Opening Serial Connection...");
+		Logger.log(Level.DEBUG, "Opening Serial Connection...");
 		//Open the serial connection
 		serial.open(Serial.DEFAULT_COM_PORT, 115200);
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Creating serial listener...");
+		Logger.log(Level.DEBUG, "Creating Serial Listener...");
 		//Create serial listener
 		SerialDataListener listener = new SerialDataListener() {
 			@Override
 			public void dataReceived(SerialDataEvent event) {
+				//Beep
 				Buzzer.beep();
-				System.out.println("    Serial: " + event.getData());
+				//Notify
+				Logger.log(Level.DEBUG, "Serial Input: " + event.getData());
 				//Check mode
 				if(HID.enabled()) {
 					//HID mode, send command to connected device
@@ -43,12 +42,10 @@ public class Rfid {
 			}
 		};
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.print("    Registering serial listener...");
+		Logger.log(Level.DEBUG, "Registering Serial Listener...");
 		//Register the listener
 		serial.addListener(listener);
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.println("  RFID Module Initialization Complete.");
+		Logger.log(Level.OKAY, "RFID module ready!");
 	}
 }

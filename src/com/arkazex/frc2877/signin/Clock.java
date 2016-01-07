@@ -3,7 +3,6 @@ package com.arkazex.frc2877.signin;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.arkazex.frc2877.signin.util.Color;
 import com.arkazex.lcd.LCDMode;
 
 public class Clock {
@@ -11,7 +10,7 @@ public class Clock {
 	//Initialization method
 	public static void init() {
 		//Notify
-		System.out.print("  Initializing Clock...");
+		Logger.log(Level.INFO, "Initializing Clock...");
 		//Create the clock thread
 		new Thread() {
 			//Run method
@@ -29,7 +28,7 @@ public class Clock {
 			}
 		}.start();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
+		Logger.log(Level.OKAY, "Clock ready!");
 	}
 	
 	//Update method

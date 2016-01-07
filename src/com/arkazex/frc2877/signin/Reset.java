@@ -1,7 +1,5 @@
 package com.arkazex.frc2877.signin;
 
-import com.arkazex.frc2877.signin.util.Color;
-
 public class Reset {
 
 	//Time
@@ -10,8 +8,8 @@ public class Reset {
 	//Init
 	public static void init() {
 		//Notify
-		System.out.println("  Initializing Reset timer...");
-		System.out.print("    Creating thread...");
+		Logger.log(Level.INFO, "Initializing Reset timer...");
+		Logger.log(Level.DEBUG, "Creating thread...");
 		//Create the thread
 		new Thread() {
 			//Run method
@@ -34,7 +32,6 @@ public class Reset {
 			}
 		}.start();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.println("  Reset timer Initialization Complete.");
+		Logger.log(Level.OKAY, "Reset timer ready!");
 	}
 }

@@ -96,7 +96,7 @@ public class Debug {
 		Display.clearl1();
 		Display.printCenter("Restarting...");
 		System.out.println("Restarting...");
-		System.exit(0);
+		System.exit(1);
 	}
 	//Hard reboot
 	private static void hr() {

@@ -9,8 +9,6 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import com.arkazex.frc2877.signin.util.Color;
-
 public class HID {
 
 	//Client writer
@@ -24,13 +22,11 @@ public class HID {
 	//Initialization method
 	public static void init() {
 		//Notify
-		System.out.println("  Initializing HID server...");
-		System.out.print("    Starting server...");
+		Logger.log(Level.INFO, "Initializing HID server...");
 		//Start server
 		startServer();
 		//Notify
-		System.out.println(Color.GREEN + " Done." + Color.RESET);
-		System.out.println("  HID server initialization complete.");
+		Logger.log(Level.OKAY, "HID server ready!");
 	}
 	
 	//Send a message to connected HID device
@@ -39,7 +35,8 @@ public class HID {
 		try {
 			//Check if connected
 			if(hidOut == null) {
-				System.out.println("HID client not connected");
+				//No client connected D:
+				Logger.log(Level.WARN, "HID invoked, no client connected");
 				return;
 			}
 			//Write
@@ -47,7 +44,7 @@ public class HID {
 			hidOut.write(hexStringToByteArray(message));
 		} catch(Exception e) {
 			//Failure
-			System.out.println("Fatal HID error: " + e.getMessage());
+			Logger.log(Level.WARN, "HID error: " + e.getMessage());
 		}
 	}
 	
@@ -75,19 +72,18 @@ public class HID {
 							//Server loop
 							serverLoop();
 						} catch(Exception e) {
-							
 							//Warning
-							System.out.println(Color.YELLOW + "Notice: " +
-									Color.RESET + "HID Socket listen error: " +
-									e.getMessage() + " (Nonfatal)");
+							Logger.log(Level.WARN, "HID socket listen error: " + 
+									e.getMessage());
 						}
 					}
 				}
 			}.start();
 		} catch(Exception e) {
-			System.out.print(Color.RED + " ERROR" + Color.RESET);
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+			//Startup error
+			Logger.log(Level.ERROR, "Failed to start HID module: " + e.getMessage());
+			Logger.handleCrash(e);
+			Logger.log(Level.INFO, "Application will continue...");
 		}
 	}
 	
@@ -136,8 +132,7 @@ public class HID {
 				Display.readyMessage = Display.defaultReadyMessage;
 				Display.ready();
 				//Notify
-				System.out.println(Color.BLUE + "NOTICE: " + Color.RESET +
-						"HID client has disconnected");
+				Logger.log(Level.INFO, "HID client has disconnected");
 			}
 		}
 	}
@@ -145,8 +140,9 @@ public class HID {
 	//Method for handling a client who just completed the handshake process
 	private static void handleClient(HandshakeCompletedEvent event) {
 		//Notify
-		System.out.println(Color.BLUE + "NOTICE: " + Color.RESET +
-				"HID Client connected from " + event.getSocket().toString());
+		Logger.log(Level.INFO, "HID client connected from " + 
+				event.getSocket().getInetAddress().toString() + ":" +
+				event.getSocket().getPort());
 		//Create output
 		hidClient = event.getSocket();
 		//Display
@@ -161,7 +157,7 @@ public class HID {
 			hidOut = hidClient.getOutputStream();
 		} catch (Exception e) {
 			//Something went wrong
-			System.out.println("HID client exception: " + e.getMessage());
+			Logger.log(Level.WARN, "HID client error: " + e.getMessage());
 		}
 		//Connected
 		connected = true;
@@ -176,35 +172,11 @@ public class HID {
 		server.setEnabledCipherSuites(server.getSupportedCipherSuites());
 		//Return the socket
 		return server;
-		
-		/*//Key password and file
-		char[] keyPass = "L1g3rb0ts2877".toCharArray();
-		InputStream keyStream = HID.class.getResourceAsStream(
-				"/com/arkazex/frc2877/signin/ssl.key");
-		
-		//Load the key store
-		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		keyStore.load(keyStream, keyPass);
-		//Initialize the key manager factory
-		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
-				KeyManagerFactory.getDefaultAlgorithm());
-		keyManagerFactory.init(keyStore, keyPass);
-		//Get the key managers
-		KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
-		//Initialize the SSL context
-		SSLContext sslContext = SSLContext.getDefault();
-		sslContext.init(keyManagers, null, new SecureRandom());
-		//Get the socket factory
-		SSLServerSocketFactory factory = sslContext.getServerSocketFactory();
-		
-		//Get the socket
-		return (SSLServerSocket) factory.createServerSocket(2877); */
 	}
 	
 	//Converts a string to bytes
 	//From http://stackoverflow.com/a/140861
 	private static byte[] hexStringToByteArray(String s) {
-		System.out.println("Sending code: " + s);
 	    int len = s.length();
 	    byte[] data = new byte[len / 2];
 	    for (int i = 0; i < len; i += 2) {

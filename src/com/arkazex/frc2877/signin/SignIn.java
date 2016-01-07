@@ -24,7 +24,7 @@ public class SignIn {
 			}
 		};
 		//Notify
-		System.out.println("Initializing V3...");
+		Logger.log(Level.INFO, "Initializing v3.1");
 		//Initialize the LCD
 		Display.init();	status(1);
 		//Initialize the Buzzer
@@ -65,5 +65,21 @@ public class SignIn {
 		//Set the label
 		Display.clearl1();
 		Display.lcd.print("Loading... (" + modnum + "/" + MODCOUNT + ")");
+	}
+	
+	//Restarts the program, and shows info
+	public static void restart(int seconds) {
+		//Loop
+		for(int s = seconds; s >= 0; s--) {
+			//Notify
+			Logger.log(Level.INFO, "Restarting in " + s + "...");
+			//Print to screen
+			Display.lcd.position(1, 0);
+			Display.lcd.print("Restarting in " +  s);
+			//Delay
+			try { Thread.sleep(1000); } catch(Exception e) {}
+		}
+		//Exit
+		System.exit(1);
 	}
 }
