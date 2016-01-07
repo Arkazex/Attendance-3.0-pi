@@ -107,11 +107,11 @@ public class Users {
 			boolean in = user.data.getString("status").equals("in");
 			//Notify
 			Logger.log(Level.INFO, user.data.getString("fname") + " " + user.data.getString("lname") +
-					" has signed " + (in ? "in" : "out"));
+					" has signed " + (in ? "out" : "in"));
 			//Display name
 			Display.clearl1();
 			//Print the name
-			Display.lcd.print((in ? "Hello " : "Bye ") + user.data.getString("fname"));
+			Display.lcd.print((in ? "Bye " : "Hello ") + user.data.getString("fname"));
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
 			//Toggle user status
