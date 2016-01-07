@@ -111,7 +111,7 @@ public class Users {
 			//Display name
 			Display.clearl1();
 			//Print the name
-			Display.lcd.print((in ? "Hello " : "Goodbye ") + user.data.getString("fname"));
+			Display.lcd.print((in ? "Hello " : "Bye ") + user.data.getString("fname"));
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
 			//Toggle user status
