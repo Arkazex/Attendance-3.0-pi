@@ -119,13 +119,15 @@ public class Users {
 			//Alert tone
 			Buzzer.beep(500);
 		} else {
-			//Trigger the tap
-			sendTrigger(id);
+			//Trigger the event
+			sendTrigger(id, source);
+			//Get the users current status
+			boolean in = user.data.getString("status").equals("in");
 			//Display name
 			Display.clearl1();
 			//Print the name
 			System.out.println("[" + source.name() + "] Trigger " + id + " " + user.data.getString("fname"));
-			Display.lcd.print("Hello " + user.data.getString("fname"));
+			Display.lcd.print((in ? "Hello " : "Goodbye ") + user.data.getString("fname"));
 			//Set the reset clock
 			Reset.time = System.currentTimeMillis() + 1500;
 		}
@@ -144,7 +146,7 @@ public class Users {
 	}
 	
 	//Trigger a sign-in event
-	public static void sendTrigger(String id) {
+	public static void sendTrigger(String id, TriggerSource ts) {
 		//Trigger in another thread
 		new Thread() {
 			@Override
@@ -152,8 +154,15 @@ public class Users {
 				//Append the arguments
 				String url = SignIn.baseURL + "?cmd=trigger&id=" + id;
 				//Request
-				try { System.out.println(UrlFetcher.fetch(url)); } catch (IOException e) {
-					
+				try {
+					//Get the response
+					String resp = UrlFetcher.fetch(url);
+					//Parse the response
+					JSONObject json = new JSONObject(resp);
+					//Check detail
+					Users.getuser(id, ts).data.put("status", json.getString("detail").equals("opened") ? "in" : "out");
+				} catch (IOException e) {
+					//TODO: Handle this
 				}
 			}
 		}.start();
